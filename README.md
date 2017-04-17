@@ -47,9 +47,9 @@ See `HHPopControllerDemo/HHPopControllerDemo.xcodeproj`
 
 系统要求
 ==============
-This library requires `iOS 6.0+` and `Xcode 7.0+`.
+该项目最低支持 `iOS 6.0` 和 `Xcode 7.0`。
 
 
 许可证
 ==============
-YYModel 使用 MIT 许可证，详情见 LICENSE 文件。
+HHPopController 使用 MIT 许可证，详情见 LICENSE 文件。
