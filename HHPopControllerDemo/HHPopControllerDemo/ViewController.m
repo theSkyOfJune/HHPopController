@@ -57,6 +57,7 @@
     HHPopItem *item2 = [HHPopItem itemWithImage:[UIImage imageNamed:@"ic_addvoucher_cinema"] title:@"加好友/群"];
     HHPopItem *item3 = [HHPopItem itemWithImage:[UIImage imageNamed:@"ic_addvoucher_input"] title:@"面对面快传"];
     [HHPopController applyPopStyle:^(HHPopStyle *style) {
+        
         style.borderColor = [UIColor cyanColor];
         style.borderWidth = 1.0f;
         style.itemTextColor = [UIColor whiteColor];

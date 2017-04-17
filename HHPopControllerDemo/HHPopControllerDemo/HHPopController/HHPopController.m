@@ -8,22 +8,6 @@
 
 #import "HHPopController.h"
 
-#ifndef    weakify
-#define weakify( x ) \
-_Pragma("clang diagnostic push") \
-_Pragma("clang diagnostic ignored \"-Wshadow\"") \
-autoreleasepool{} __weak __typeof__(x) __weak_##x##__ = x; \
-_Pragma("clang diagnostic pop")
-#endif
-
-#ifndef    strongify
-#define strongify( x ) \
-_Pragma("clang diagnostic push") \
-_Pragma("clang diagnostic ignored \"-Wshadow\"") \
-try{} @finally{} __typeof__(x) x = __weak_##x##__; \
-_Pragma("clang diagnostic pop")
-#endif
-
 
 NSString *const HHPopControllerWillPopNotification = @"HHPopControllerWillPopNotification";
 NSString *const HHPopControllerDidPopNotification = @"HHPopControllerDidPopNotification";
@@ -312,7 +296,11 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
 
 #pragma mark - HHPopController
 
-#define HHGlobalPop [HHPopController sharedPopController]
+static inline HHPopController *HHGlobalPop() {
+    return [HHPopController sharedPopController];
+}
+
+
 @interface HHPopController () <UITableViewDelegate, UITableViewDataSource>
 @property (nonatomic, strong)HHPopStyle *style;
 @property (nonatomic, weak)UIView *sourceView;
@@ -347,31 +335,34 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
     });
     return pop;
 }
+
 + (void)applyPopStyle:(void (^)(HHPopStyle *))maker {
-    !maker ?: maker(HHGlobalPop.style);
+    !maker ?: maker(HHGlobalPop().style);
 }
-+ (void)applyReturnPopStyle:(HHPopStyle *(^)(HHPopStyle *))maker {
-    if (maker) {
-        HHGlobalPop.style = maker(HHGlobalPop.style);
-    }
+
++ (void)applyReturnedPopStyle:(HHPopStyle *(^)(HHPopStyle *))maker {
+    if (maker) HHGlobalPop().style = maker(HHGlobalPop().style);
 }
+
 + (void)popSourceView:(UIView *)view popItems:(NSArray<HHPopItem *> *)items selectionHandler:(SelectionHandler)handler {
     [self popTargetRect:view.bounds soureceView:view popItems:items selectionHandler:handler];
 }
+
 + (void)popTargetRect:(CGRect)rect soureceView:(UIView *)view popItems:(NSArray<HHPopItem *> *)items selectionHandler:(SelectionHandler)handler {
-    HHGlobalPop.popItems = items;
-    HHGlobalPop.sourceView = view;
-    [HHGlobalPop initFramesWithTargetRect:rect];
-    if (!HHRectIsVaild(HHGlobalPop.overlayViewFrame)) return;
-    HHGlobalPop.handler = handler;
-    [HHGlobalPop show];
+    HHGlobalPop().popItems = items;
+    HHGlobalPop().sourceView = view;
+    [HHGlobalPop() initFramesWithTargetRect:rect];
+    if (!HHRectIsVaild(HHGlobalPop().overlayViewFrame)) return;
+    HHGlobalPop().handler = handler;
+    [HHGlobalPop() show];
 }
+
 + (BOOL)isPopVisible {
-    return HHGlobalPop.isPopVisible;
+    return HHGlobalPop().isPopVisible;
 }
 
 + (void)dismiss {
-    [HHGlobalPop dismiss];
+    [HHGlobalPop() dismiss];
 }
 
 - (void)show {
@@ -387,6 +378,7 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
         [HHNotificationCenter() postNotificationName:HHPopControllerDidPopNotification object:self userInfo:@{}];
     }];
 }
+
 - (void)dismiss {
     [HHNotificationCenter() postNotificationName:HHPopControllerWillHidenNotification object:self userInfo:@{}];
     [UIView animateWithDuration:self.style.animationOut delay:0.0 options:UIViewAnimationOptionCurveLinear animations:^{
@@ -593,7 +585,6 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
     CGPoint overlayP = (CGPoint){overlayX - (0.5 - anchorP.x) * overlayW,
                                  overlayY - (0.5 - anchorP.y) * overlayH};
     
-    
     _overlayViewFrame = (CGRect){overlayP, overlayW, overlayH};
     _tableViewFrame = (CGRect){tableX, tableY, tableW, tableH};
 }
@@ -602,17 +593,20 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return self.popItems.count;
 }
+
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     _HHPopCell *cell = [tableView dequeueReusableCell:[_HHPopCell class]];
     cell.item = self.popItems[indexPath.row];
     cell.drawSeperator = indexPath.row != self.popItems.count - 1;
     return cell;
 }
+
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     if (!self.style.header) return nil;
     HHPopStyle *style = self.style;
     return [tableView reuseViewWith:style.header];
 }
+
 - (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
     if (!self.style.footer) return nil;
     HHPopStyle *style = self.style;
@@ -629,9 +623,11 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
     !self.handler ?: self.handler(idx, item);
     [self dismiss];
 }
+
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
     return self.style.header ? self.style.header.height : 0;
 }
+
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
     return self.style.footer ? self.style.footer.height : 0;
 }
@@ -650,19 +646,20 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
     CGFloat height = popItems.count * style.rowHeight + (style.header ? style.header.height : 0) + (style.footer ? style.footer.height : 0);
     _idealSize = (CGSize){width, height};
 }
+
 - (HHPopStyle *)style {
     if (!_style) {
         _style = [[HHPopStyle alloc] init];
     }
     return _style;
 }
+
 - (UITableView *)tableView {
     if (!_tableView) {
         UITableView *tableView = [[UITableView alloc]initWithFrame:self.tableViewFrame style:UITableViewStylePlain];
         tableView.backgroundColor = [UIColor clearColor];
-        if (self.style.cornerRadius) {
+        if (self.style.cornerRadius)
             [tableView masklayerWithRadio:self.style.cornerRadius];
-        }
         tableView.bounces = self.style.bounces;
         tableView.rowHeight = self.style.rowHeight;
         tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
@@ -678,9 +675,11 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
         _HHCoverView *content = [[_HHCoverView alloc] initWithFrame:[UIScreen mainScreen].bounds];
         content.backgroundColor = self.style.dimColor;
         _contenView = content;
-        @weakify(self);
+        
+        __weak __typeof__(self) weakSelf = self;
         [content setTouchHandler:^{
-            @strongify(self);
+            __typeof__(self) self = weakSelf;
+            
             [self dismiss];
         }];
         [HHKeyWindow() addSubview:content];
@@ -708,7 +707,7 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
     return item;
 }
 - (CGFloat)width {
-    HHPopStyle *style = HHGlobalPop.style;
+    HHPopStyle *style = HHGlobalPop().style;
     CGFloat titleW = [self.title widthForFont:style.itemTextFont];
     CGFloat imageW = _image ? _image.size.width + 45 : 30;
     return imageW + titleW;
@@ -727,7 +726,7 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
     return self;
 }
 - (void)setup {
-    HHPopStyle *style = HHGlobalPop.style;
+    HHPopStyle *style = HHGlobalPop().style;
     self.backgroundColor = style.itemBgColor;
     
     self.imageView.contentMode = style.itemImageContentMode;
@@ -744,7 +743,7 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
     if (!drawSeperator) return;
     [self.seperatorView removeFromSuperview];
     UIView *seperator = [[UIView alloc]initWithFrame:CGRectZero];
-    seperator.backgroundColor = HHGlobalPop.style.separatorColor;
+    seperator.backgroundColor = HHGlobalPop().style.separatorColor;
     _seperatorView = seperator;
     [self addSubview:seperator];
 }
@@ -753,7 +752,7 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
     if (!self.shouldDrawSeperator) return;
     self.textLabel.height -= 2;
     self.textLabel.top += 1;
-    UIEdgeInsets inset = HHGlobalPop.style.separatorInset;
+    UIEdgeInsets inset = HHGlobalPop().style.separatorInset;
     self.seperatorView.left = inset.left;
     self.seperatorView.width = self.width - inset.left - inset.right;
     self.seperatorView.height = 1;
@@ -770,7 +769,7 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
         self.backgroundColor = [UIColor clearColor];
-        self.layer.anchorPoint = HHGlobalPop.anchorPoint;
+        self.layer.anchorPoint = HHGlobalPop().anchorPoint;
         [self drawArrow];
     }
     return self;
@@ -778,7 +777,7 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
 #pragma mark 绘制箭头
 
 - (void)drawArrow {
-    HHPopStyle *style = HHGlobalPop.style;
+    HHPopStyle *style = HHGlobalPop().style;
     HHPopSupplementaryStyle *header = style.header;
     HHPopSupplementaryStyle *footer = style.footer;
     
@@ -787,7 +786,7 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
     UIColor *headerBgColor = header ? header.bgColor : style.itemBgColor;
     UIColor *footerBgColor = footer ? footer.bgColor : style.itemBgColor;
     
-    CGPoint arrowP = [HHKeyWindow() convertPoint:HHGlobalPop.arrowPoint toView:self];
+    CGPoint arrowP = [HHKeyWindow() convertPoint:HHGlobalPop().arrowPoint toView:self];
     CGFloat arrowX = arrowP.x;
     CGFloat arrowY = arrowP.y;
     CGFloat arrowW = style.arrowSize.width;
@@ -802,7 +801,7 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
     UIBezierPath *arrowPath = [UIBezierPath bezierPath];
     UIColor *bgColor;
     
-    _HHArrowDirection dir = HHGlobalPop.arrowDirection;
+    _HHArrowDirection dir = HHGlobalPop().arrowDirection;
     
     CGFloat top, left, bottom, right;
     
@@ -862,7 +861,7 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
         [arrowPath addArcWithCenter:(CGPoint){left, bottom} radius:radius startAngle:M_PI_2 endAngle:M_PI clockwise:YES];
         [arrowPath addLineToPoint:(CGPoint){arrowH, arrowY + arrowW * 0.5}];
         
-        CGFloat footerStartY = HHGlobalPop.tableViewFrame.size.height - footerH;
+        CGFloat footerStartY = HHGlobalPop().tableViewFrame.size.height - footerH;
         if (arrowY < headerH) {
             bgColor = headerBgColor;
         } else if (arrowY > footerStartY) {
@@ -890,7 +889,7 @@ typedef void (^SelectionHandler)(NSInteger, HHPopItem *);
         [arrowPath addArcWithCenter:(CGPoint){right, top} radius:radius startAngle:3 * M_PI_2 endAngle:0 clockwise:YES];
         [arrowPath addLineToPoint:(CGPoint){rightLine, arrowY - arrowW * 0.5}];
         
-        CGFloat footerStartY = HHGlobalPop.tableViewFrame.size.height - footerH;
+        CGFloat footerStartY = HHGlobalPop().tableViewFrame.size.height - footerH;
         if (arrowY < headerH) {
             bgColor = headerBgColor;
         } else if (arrowY > footerStartY) {

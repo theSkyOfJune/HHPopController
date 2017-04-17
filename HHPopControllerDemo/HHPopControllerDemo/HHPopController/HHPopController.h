@@ -14,12 +14,12 @@ FOUNDATION_EXTERN NSString *const HHPopControllerDidPopNotification;
 FOUNDATION_EXTERN NSString *const HHPopControllerWillHidenNotification;
 FOUNDATION_EXTERN NSString *const HHPopControllerDidHidenNotification;
 
-/// 箭头方式
+/// 箭头方向
 typedef NS_ENUM(NSInteger, HHArrowStyle) {
     HHArrowStyleVerticalDefault = 0, ///< up or down based on source view location in window
     HHArrowStyleHorizontalDefault, ///< left or right based on source view location in window
     HHArrowStyleUp,///< up force
-    HHArrowStyleDown,/// < down force
+    HHArrowStyleDown,///< down force
     HHArrowStyleLeft,///< left force
     HHArrowStyleRight///< right force
 };
@@ -118,7 +118,12 @@ typedef NS_ENUM(NSInteger, HHArrowStyle) {
 /// 弹出视图控制器
 @interface HHPopController : NSObject
 
-+ (void)applyReturnPopStyle:(HHPopStyle *(^)(HHPopStyle *style))maker;
+- (instancetype)init __attribute__((unavailable("单例类，请使用+ (instancetype)sharedPopController")));
++ (instancetype)new __attribute__((unavailable("单例类，请使用+ (instancetype)sharedPopController")));
+
++ (instancetype)sharedPopController;
+
++ (void)applyReturnedPopStyle:(HHPopStyle *(^)(HHPopStyle *style))maker;
 
 + (void)applyPopStyle:(void (^)(HHPopStyle *style))maker;
 
