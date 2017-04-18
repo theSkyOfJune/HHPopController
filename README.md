@@ -180,6 +180,7 @@ Example:
     @end
 
 支持监听以下生命周期通知
+
     FOUNDATION_EXTERN NSString *const HHPopControllerWillPopNotification;
     FOUNDATION_EXTERN NSString *const HHPopControllerDidPopNotification;
     FOUNDATION_EXTERN NSString *const HHPopControllerWillHidenNotification;
