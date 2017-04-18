@@ -41,7 +41,7 @@ Demo Project
 关键类定义
 ==============
 
-###可定制样式模型HHPopStyle
+### 可定制样式模型HHPopStyle
 
     @interface HHPopStyle : NSObject
 
@@ -104,7 +104,7 @@ Demo Project
 可以通过header和footer属性定制头部视图和尾部视图, 如果不需要箭头, 设置arrowSize为CGSizeZero即可
 
 
-###追加视图样式定义
+### 追加视图样式定义
 
     /// 弹出视图的追加视图模型 (header and footer)
     @interface HHPopSupplementaryStyle : NSObject
@@ -145,7 +145,7 @@ Example:
     style.footer = footer;
 
 
-###弹窗控制器HHPopController
+### 弹窗控制器HHPopController
 
     @interface HHPopController : NSObject
 
@@ -168,7 +168,7 @@ Example:
 
     @end
 
-相信您已经知道怎么使用了, 希望在开发中能帮助到您, 欢迎isssues me, 乐意为您解答出现的相关问题! 
+相信您已经知道怎么使用了, 希望在开发中能帮助到您, 欢迎isssues me, 乐意为您解答出现的任何相关问题! 
 
 
 安装
