@@ -101,7 +101,18 @@ Demo Project
 
     @end
 
-可以通过header和footer属性定制头部视图和尾部视图, 如果不需要箭头, 设置arrowSize为CGSizeZero即可
+箭头方向是个枚举类型, 定义如下
+
+    typedef NS_ENUM(NSInteger, HHArrowStyle) {
+        HHArrowStyleVerticalDefault = 0, ///< up or down based on source view location in window
+        HHArrowStyleHorizontalDefault, ///< left or right based on source view location in window
+        HHArrowStyleUp,///< up force
+        HHArrowStyleDown,///< down force
+        HHArrowStyleLeft,///< left force
+        HHArrowStyleRight///< right force
+    };
+
+也可以通过header和footer属性定制头部视图和尾部视图, 如果不需要箭头, 设置arrowSize为CGSizeZero即可
 
 
 ### 追加视图样式定义
@@ -167,6 +178,12 @@ Example:
     + (void)dismiss;
 
     @end
+
+支持监听以下生命周期通知
+    FOUNDATION_EXTERN NSString *const HHPopControllerWillPopNotification;
+    FOUNDATION_EXTERN NSString *const HHPopControllerDidPopNotification;
+    FOUNDATION_EXTERN NSString *const HHPopControllerWillHidenNotification;
+    FOUNDATION_EXTERN NSString *const HHPopControllerDidHidenNotification;
 
 相信您已经知道怎么使用了, 希望在开发中能帮助到您, 欢迎isssues me, 乐意为您解答出现的任何相关问题! 
 
